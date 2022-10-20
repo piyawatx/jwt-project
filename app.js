@@ -4,6 +4,7 @@ require("./config/database").connect();
 const express = require("express");
 const { validate } = require("./model/user");
 const User = require("./model/user");
+const Transaction = require("./model/transaction");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const auth = require("./middleware/auth");
@@ -100,15 +101,16 @@ app.post("/transfer", async (req, res) => {
       // const user2 = await User.findOne({ email: receiver });
       // console.log(user2.email, user2.balance);
     });
-
-    let date = new Date().toLocaleString('en-US', { timeZone: "Asia/Bangkok" });
-    let transaction = {
+    let date = new Date().toLocaleString("en-US", { timeZone: "Asia/Bangkok" });
+    const transaction = await Transaction.create({
+      datetime: date,
       user: user,
       receiver: receiver,
+      userRemain: newBalance1,
+      receiverRemain: newBalance2,
       amount: amount,
-      balance: newBalance1,
-      datetime: date,
-    };
+    });
+    
     res.send(transaction);
   } catch (error) {
     console.log(error);
