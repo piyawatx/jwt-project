@@ -67,6 +67,54 @@ app.put("/withdraw", async (req, res) => {
   }
 });
 
+app.post("/transfer", async (req, res) => {
+  try {
+    const { user, receiver, amount } = req.body;
+
+    const user1 = await User.findOne({ email: user });
+    const user2 = await User.findOne({ email: receiver });
+    const newBalance1 = Number(user1.balance) - Number(amount);
+    const newBalance2 = Number(user2.balance) + Number(amount);
+
+    var newvalue1 = {
+      $set: {
+        balance: newBalance1,
+      },
+    };
+    var newvalue2 = {
+      $set: {
+        balance: newBalance2,
+      },
+    };
+
+    var myquery1 = { email: user1.email };
+    var myquery2 = { email: user2.email };
+
+    User.updateOne(myquery1, newvalue1, async (err, result) => {
+      if (err) throw err;
+      // const user1 = await User.findOne({ email: user });
+      // console.log(user1.email, user1.balance);
+    });
+    User.updateOne(myquery2, newvalue2, async (err, result) => {
+      if (err) throw err;
+      // const user2 = await User.findOne({ email: receiver });
+      // console.log(user2.email, user2.balance);
+    });
+
+    let date = new Date().toLocaleString('en-US', { timeZone: "Asia/Bangkok" });
+    let transaction = {
+      user: user,
+      receiver: receiver,
+      amount: amount,
+      balance: newBalance1,
+      datetime: date,
+    };
+    res.send(transaction);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 app.post("/register", async (req, res) => {
   try {
     // get input
