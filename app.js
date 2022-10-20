@@ -26,6 +26,32 @@ app.get("/user/:email", async (req, res) => {
     console.log(error);
   }
 });
+app.get("/transaction/:email", async (req, res) => {
+  try {
+    const email = req.params.email;
+
+    const transaction = await Transaction.find({ email });
+
+    let result = [];
+    transaction.forEach((t) => {
+      let x = {
+        datetime: t.datetime,
+        date: new Date(t.datetime),
+        user: t.user == email ? t.user : t.receiver,
+        remain: t.user == email ? t.userRemain : t.receiverRemain,
+        action: t.user == email ? "Transfer" : "Receive",
+        from: t.user == email ? t.receiver : t.user,
+        amount: t.amount,
+      };
+      result.push(x);
+    });
+    result.sort((a, b) => b.date - a.date);
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 app.put("/deposit", async (req, res) => {
   try {
@@ -110,7 +136,7 @@ app.post("/transfer", async (req, res) => {
       receiverRemain: newBalance2,
       amount: amount,
     });
-    
+
     res.send(transaction);
   } catch (error) {
     console.log(error);
